@@ -1,4 +1,5 @@
 import csv
+import re
 
 #DUNE - PART I
 def load_data(filename):
@@ -14,10 +15,8 @@ def load_data(filename):
     return result
 
 def analyse_nba_game(play_by_play_moves):
-   # game_summary = {"home_team": {"name": TEAM_NAME, "players_data": DATA}, "away_team": {"name": TEAM_NAME, "players_data": DATA}}
-    #DATA will be an array of hashes with this format:
-    #{"player_name": XXX, "FG": XXX, "FGA": XXX, "FG%": XXX, "3P": XXX, "3PA": XXX, "3P%": XXX, "FT": XXX, "FTA": XXX, "FT%": XXX, "ORB": XXX, "DRB": XXX, "TRB": XXX, "AST": XXX, "STL": XXX, "BLK": XXX, "TOV": XXX, "PF": XXX, "PTS": XXX}
-
+    
+    
     for play in play_by_play_moves:
       # values = play_by_play_moves.split('|')
         PERIOD = play[0]
@@ -30,7 +29,10 @@ def analyse_nba_game(play_by_play_moves):
         DESCRIPTION = play[7]
         print(AWAY_TEAM)
 
-
+    game_summary = {"home_team": {"name": HOME_TEAM, "players_data": DATA}, "away_team": {"name": AWAY_TEAM, "players_data": DATA}}
+    #DATA will be an array of hashes with this format:
+    DATA = {"player_name": XXX, "FG": XXX, "FGA": XXX, "FG%": XXX, "3P": XXX, "3PA": XXX, "3P%": XXX, "FT": XXX, "FTA": XXX, "FT%": XXX, "ORB": XXX, "DRB": XXX, "TRB": XXX, "AST": XXX, "STL": XXX, "BLK": XXX, "TOV": XXX, "PF": XXX, "PTS": XXX}
+    DATA_HEADER = "\t".join(["player_name", "FG", "FGA", "FG%", "3P", "3PA", "3P%", "FT", "FTA", "FT%", "ORB", "DRB", "TRB", "AST", "STL", "BLK", "TOV", "PF", "PTS"])
     #return game_summary
 def _main():
     play_by_play_moves = load_data("nba_game_blazers_lakers_20181018.txt")
@@ -39,3 +41,24 @@ def _main():
 _main()
 
 #DUNE - PART II
+
+"""
+    FG: Field Goals Made
+    FGA: Field Goal Attempts
+    FG%: Field Goal Percentage
+    3P: Three-Pointers Made
+    3PA: Three-Point Attempts
+    3P%: Three-Point Percentage
+    FT: Free Throws Made
+    FTA: Free Throw Attempts
+    FT%: Free Throw Percentage
+    ORB: Offensive Rebounds
+    DRB: Defensive Rebounds
+    TRB: Total Rebounds
+    AST: Assists
+    STL: Steals
+    BLK: Blocks
+    TOV: Turnovers
+    PF: Personal Fouls
+    PTS: Points
+"""
