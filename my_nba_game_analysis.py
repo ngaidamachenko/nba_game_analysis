@@ -13,6 +13,8 @@ def load_data(filename):
         for row in csvreader:
             result.append(row)
     return result
+def away_team_bool(AWAY_TEAM, RELEVANT_TEAM):
+    return AWAY_TEAM == RELEVANT_TEAM:
 
 def analyse_nba_game(play_by_play_moves):
     
