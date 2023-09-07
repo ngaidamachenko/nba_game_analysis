@@ -14,40 +14,109 @@ def load_data(filename):
             result.append(row)
     return result
 def away_team_bool(AWAY_TEAM, RELEVANT_TEAM):
-    return AWAY_TEAM == RELEVANT_TEAM:
+    return AWAY_TEAM == RELEVANT_TEAM
 
 def analyse_nba_game(play_by_play_moves):
+    game_summary = {"home_team": {"name": "", "players_data": {}}, "away_team": {"name": "otherteam", "players_data": {}}}
     
-    
+    player_data_patterns = {#dictionary to store stats search patterns
+        "FG": r'(.*) makes (2-pt|3-pt) jump shot from',
+        "FGA": r'(.*) (makes|misses) (2-pt|3-pt) jump shot from', #made+attempts?
+        #"FG%": #fg/fga,
+        "3P": r'(.*)makes 3-pt jump shot from',
+        "3PA": r'(.*) (makes|misses) (3-pt) jump shot from',
+        #"3P%": #3p/3pa,
+        "FT": r'(.*) makes free throw',
+        "FTA": r'(.*) (makes|misses) free throw',
+        #"FT%": #ft/fta,
+        "ORB": r'Offensive rebound by (.*)',
+        "DRB": r'Defensive rebound by (.*)',
+        "TRB": r'(Ofensive|Defensive) rebound by (.*)',
+        "AST": r'assist by (.*)',
+        "STL": r'steal by (.*)',
+        "BLK": r'block by (.*)' ,
+        "TOV": r'Turnover by (.*)',
+        "PF": r'Shooting foul by (.*)',
+       # "PTS": #add 2pts|1pt|3pts,
+    }
+
     for play in play_by_play_moves:
       # values = play_by_play_moves.split('|')
-        PERIOD = play[0]
-        REMAINING_SEC = play[1]
+        
+        #PERIOD = play[0]
+        #REMAINING_SEC = play[1]
         RELEVANT_TEAM = play[2]
         AWAY_TEAM = play[3]
         HOME_TEAM = play[4]
-        AWAY_SCORE = play[5]
-        HOME_SCORE = play[6]
+        #AWAY_SCORE = play[5]
+        #HOME_SCORE = play[6]
         DESCRIPTION = play[7]
       #  print(AWAY_TEAM)
-        main_player_match = re.search(r'(\b[A-Z]\W\s[A-Z][a-z]+\b)', DESCRIPTION)#((\b[A-Z]\W\s[A-Z][a-z]+\b)\s)|
+        '''main_player_match = re.search(r'(\b[A-Z]\W\s[A-Z][a-z]+\b)', DESCRIPTION)#((\b[A-Z]\W\s[A-Z][a-z]+\b)\s)|
         if main_player_match:
             main_player = main_player_match[0]
         else:
             continue
-        print(main_player)
-    #game_summary = {"home_team": {"name": HOME_TEAM, "players_data": DATA}, "away_team": {"name": AWAY_TEAM, "players_data": DATA}}
-    #DATA will be an array of hashes with this format:
-   #DUNE - PART II
-    #PLAYER_DATA = {"player_name": XXX, "FG": XXX, "FGA": XXX, "FG%": XXX, "3P": XXX, "3PA": XXX, "3P%": XXX, "FT": XXX, "FTA": XXX, "FT%": XXX, "ORB": XXX, "DRB": XXX, "TRB": XXX, "AST": XXX, "STL": XXX, "BLK": XXX, "TOV": XXX, "PF": XXX, "PTS": XXX}
-    #DATA_HEADER = "\t".join(["player_name", "FG", "FGA", "FG%", "3P", "3PA", "3P%", "FT", "FTA", "FT%", "ORB", "DRB", "TRB", "AST", "STL", "BLK", "TOV", "PF", "PTS"])
-    #return game_summary
-    #DATA = DATA_HEADER.append(DATA)
-    #regex_main_name = #regex mainname = ((\b[A-Z]\W\s[A-Z][a-z]+\b)\s)|(\b[A-Z]\W\s[A-Z][a-z]+\b)\( to search for a name followed by spacebar or '(' - main player's name
-                       #regex supportname = (\b[A-Z]\W\s[A-Z][a-z]+\b)\)
+        print(main_player)'''
+        '''three_pts_regex = re.compile(r'(.*)makes 3-pt jump shot from')
+        three_pts = three_pts_regex.search(DESCRIPTION)
+        player_name = three_pts[1]'''
+        #search for stats in the description using patterns 
+        for stat, pattern in player_data_patterns.items(): #items() retrieves stat-value pairs (stat: value)
+            match = re.search(pattern, DESCRIPTION)
+            if match:
+                player_name = match.group(1)#first group match in regex 
+                print(player_name)
+                if stat not in game_summary[RELEVANT_TEAM]["players_data"][player_name][stat]: #initialize to 0
+                    game_summary[RELEVANT_TEAM]["players_data"][player_name][stat] = 0
+                else: 
+                    game_summary[RELEVANT_TEAM]["players_data"][player_name][stat] += 1
+        #manually calculate % stats and pts
+        for player, stat in game_summary[RELEVANT_TEAM]["players_data"][player_name].items():
+            FG = stat["FG"]
+            FGA = stat["FGA"]
+            FGP = FG/FGA
+            print(FGP)
+            stat["FG%"] = FGP
+
+            three_pts_made = stat["3P"]
+            three_pts_attempts = stat["3PA"] 
+            three_pts_percentage = three_pts_made/three_pts_attempts
+            print(three_pts_percentage) 
+            stat["3P%"] = three_pts_percentage 
+
+            FT = stat["FT"]
+            FTA = stat["FTA"]
+            FTP = FT/FTA
+            print(FTP)
+            stat["FTP"] = FTP
+
+            PTS = 2*FG + 3*three_pts_made + FT
+            print(PTS)
+
+    return game_summary
+    print(game_summary)
+        
+    '''    if away_team_bool(AWAY_TEAM, RELEVANT_TEAM):
+            game_summary["away team"]["players_data"][player_name]['3P'] += 1
+        else:
+            game_summary["home team"]["players_data"][player_name]['3P'] += 1
+        break
+        print(three_pts[1])'''
+    ''' #DATA will be an array of hashes with this format:
+    #DUNE - PART II
+        PLAYER_DATA = {"player_name": XXX, "FG": XXX, "FGA": XXX, "FG%": XXX, "3P": XXX, "3PA": XXX, "3P%": XXX, "FT": XXX, "FTA": XXX, "FT%": XXX, "ORB": XXX, "DRB": XXX, "TRB": XXX, "AST": XXX, "STL": XXX, "BLK": XXX, "TOV": XXX, "PF": XXX, "PTS": XXX}
+        DATA_HEADER = "\t".join(["player_name", "FG", "FGA", "FG%", "3P", "3PA", "3P%", "FT", "FTA", "FT%", "ORB", "DRB", "TRB", "AST", "STL", "BLK", "TOV", "PF", "PTS"])
+        #return game_summary
+        DATA = DATA_HEADER.append(PLAYER_DATA)
+        #regex_main_name = #regex mainname = ((\b[A-Z]\W\s[A-Z][a-z]+\b)\s)|(\b[A-Z]\W\s[A-Z][a-z]+\b)\( to search for a name followed by spacebar or '(' - main player's name
+                        #regex supportname = (\b[A-Z]\W\s[A-Z][a-z]+\b)\)
    # regex_fg
    # regex_fga
-    
+        FGA_percent = FG/FGA
+        three_pts_percent = three_pts/three_pts_attempt
+        free_throw_percent = free_throw/free_flow_attempt
+        TRB = ORB+DRB'''
 
 def _main():
     play_by_play_moves = load_data("nba_game_blazers_lakers_20181018.txt")
@@ -56,8 +125,9 @@ def _main():
 _main()
 
 
-
+#ABBREVIATIONS
 """
+
     FG: Field Goals Made
     FGA: Field Goal Attempts
     FG%: Field Goal Percentage
