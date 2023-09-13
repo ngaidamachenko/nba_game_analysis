@@ -21,7 +21,7 @@ def analyse_nba_game(play_by_play_moves):
     game_summary = {"home_team": {"name": "", "players_data": {}}, "away_team": {"name": "otherteam", "players_data": {}}}
     
     player_data_patterns = {#dictionary to store stats search patterns
-        "FG": r'(\b[A-Z]\W\s[A-Z][a-z]+\b) makes (2-pt|3-pt) jump shot from',
+        "FG": r'(.*) makes (2-pt|3-pt) jump shot from',
         "FGA": r'(.*) (makes|misses) (2-pt|3-pt) jump shot from', #made+attempts?
         #"FG%": #fg/fga,
         "3P": r'(.*)makes 3-pt jump shot from',
@@ -30,14 +30,14 @@ def analyse_nba_game(play_by_play_moves):
         "FT": r'(.*) makes free throw',
         "FTA": r'(.*) (makes|misses) free throw',
         #"FT%": #ft/fta,
-        "ORB": r'Offensive rebound by (.*)',
-        "DRB": r'Defensive rebound by (.*)',
-        "TRB": r'(Ofensive|Defensive) rebound by (.*)',
-        "AST": r'assist by (.*)',
-        "STL": r'steal by (.*)',
-        "BLK": r'block by (.*)' ,
+        "ORB": r'Offensive rebound by (\b[A-Z]\W\s[A-Z][a-z]+\b)',
+        "DRB": r'Defensive rebound by (\b[A-Z]\W\s[A-Z][a-z]+\b)',
+        "TRB": r'Defensive rebound by (\b[A-Z]\W\s[A-Z][a-z]+\b)' or r'Offensive rebound by (\b[A-Z]\W\s[A-Z][a-z]+\b)',
+        "AST": r'assist by (\b[A-Z]\W\s[A-Z][a-z]+\b)',
+        "STL": r'steal by (\b[A-Z]\W\s[A-Z][a-z]+\b)',
+        "BLK": r'block by (\b[A-Z]\W\s[A-Z][a-z]+\b)' ,
         "TOV": r'Turnover by (\b[A-Z]\W\s[A-Z][a-z]+\b)',
-        "PF": r'Shooting foul by (.*)',
+        "PF": r'foul by (\b[A-Z]\W\s[A-Z][a-z]+\b)',
        # "PTS": #add 2pts|1pt|3pts,
     }
 
@@ -52,17 +52,8 @@ def analyse_nba_game(play_by_play_moves):
         #AWAY_SCORE = play[5]
         #HOME_SCORE = play[6]
         DESCRIPTION = play[7]
-      #  print(AWAY_TEAM)
-        '''main_player_match = re.search(r'(\b[A-Z]\W\s[A-Z][a-z]+\b)', DESCRIPTION)#((\b[A-Z]\W\s[A-Z][a-z]+\b)\s)|
-        if main_player_match:
-            main_player = main_player_match[0]
-        else:
-            continue
-        print(main_player)'''
-        '''three_pts_regex = re.compile(r'(.*)makes 3-pt jump shot from')
-        three_pts = three_pts_regex.search(DESCRIPTION)
-        player_name = three_pts[1]'''
-        player_name = None
+        #print(AWAY_TEAM)'
+        #player_name = None
         if away_team_bool(AWAY_TEAM, CURRENT_TEAM):
             relevant_team = "away_team"
         else:
@@ -73,10 +64,10 @@ def analyse_nba_game(play_by_play_moves):
             if match:
                 player_name = match[1] #.group(1)#first group match in regex 
                 print(player_name)
-                if stat not in game_summary[relevant_team]["players_data"][player_name][stat]:
-                    game_summary[relevant_team]["players_data"][player_name][stat] = 0 #initialize to 0
-                else: 
-                    game_summary[relevant_team]["players_data"][player_name][stat] += 1
+                #if stat not in game_summary[relevant_team]["players_data"][player_name][stat]:
+                #    game_summary[relevant_team]["players_data"][player_name][stat] = 0 #initialize to 0
+                #else: 
+                #    game_summary[relevant_team]["players_data"][player_name][stat] += 1
             else:
                 continue
         #manually calculate % stats and pts
@@ -105,27 +96,13 @@ def analyse_nba_game(play_by_play_moves):
 
     return game_summary
     print(game_summary)
-        
-    '''    if away_team_bool(AWAY_TEAM, RELEVANT_TEAM):
-            game_summary["away team"]["players_data"][player_name]['3P'] += 1
-        else:
-            game_summary["home team"]["players_data"][player_name]['3P'] += 1
-        break
-        print(three_pts[1])'''
+
     ''' #DATA will be an array of hashes with this format:
     #DUNE - PART II
         PLAYER_DATA = {"player_name": XXX, "FG": XXX, "FGA": XXX, "FG%": XXX, "3P": XXX, "3PA": XXX, "3P%": XXX, "FT": XXX, "FTA": XXX, "FT%": XXX, "ORB": XXX, "DRB": XXX, "TRB": XXX, "AST": XXX, "STL": XXX, "BLK": XXX, "TOV": XXX, "PF": XXX, "PTS": XXX}
         DATA_HEADER = "\t".join(["player_name", "FG", "FGA", "FG%", "3P", "3PA", "3P%", "FT", "FTA", "FT%", "ORB", "DRB", "TRB", "AST", "STL", "BLK", "TOV", "PF", "PTS"])
         #return game_summary
-        DATA = DATA_HEADER.append(PLAYER_DATA)
-        #regex_main_name = #regex mainname = ((\b[A-Z]\W\s[A-Z][a-z]+\b)\s)|(\b[A-Z]\W\s[A-Z][a-z]+\b)\( to search for a name followed by spacebar or '(' - main player's name
-                        #regex supportname = (\b[A-Z]\W\s[A-Z][a-z]+\b)\)
-   # regex_fg
-   # regex_fga
-        FGA_percent = FG/FGA
-        three_pts_percent = three_pts/three_pts_attempt
-        free_throw_percent = free_throw/free_flow_attempt
-        TRB = ORB+DRB'''
+        DATA = DATA_HEADER.append(PLAYER_DATA)'''
 
 def _main():
     play_by_play_moves = load_data("nba_game_blazers_lakers_20181018.txt")
