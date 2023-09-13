@@ -58,18 +58,42 @@ def analyse_nba_game(play_by_play_moves):
             relevant_team = "away_team"
         else:
             relevant_team = "home_team"
+        
+        player_name = None
         #search for stats in the description using patterns 
         for stat, pattern in player_data_patterns.items(): #items() retrieves stat-value pairs (stat: value)
             match = re.search(pattern, DESCRIPTION)
             if match:
-                player_name = match[1] #.group(1)#first group match in regex 
+                player_name = match.group(1)#first group match in regex 
                 print(player_name)
-                #if stat not in game_summary[relevant_team]["players_data"][player_name][stat]:
-                #    game_summary[relevant_team]["players_data"][player_name][stat] = 0 #initialize to 0
-                #else: 
-                #    game_summary[relevant_team]["players_data"][player_name][stat] += 1
-            else:
-                continue
+        if player_name: #exists
+            if player_name not in game_summary[relevant_team]["players_data"]:
+                game_summary[relevant_team]["players_data"][player_name] = {
+                    "Players": player_name,
+                    "FG": 0,
+                    "FGA": 0,
+                    "3P": 0,
+                    "3PA": 0,
+                    "FT": 0,
+                    "FTA": 0,
+                    "ORB": 0,
+                    "DRB": 0,
+                    "TRB": 0,
+                    "AST": 0,
+                    "STL": 0,
+                    "BLK": 0,
+                    "TOV": 0,
+                    "PF": 0,
+                }
+            for stat, pattern in player_data_patterns.items():
+                match = re.search(pattern, DESCRIPTION)
+                if match:
+                    player_name = match.group(1)
+                    if stat not in game_summary[relevant_team]["players_data"][player_name]:
+                        game_summary[relevant_team]["players_data"][player_name][stat] = 0 #initialize to 0
+                    else: 
+                        game_summary[relevant_team]["players_data"][player_name][stat] += 1
+
         #manually calculate % stats and pts
     for team in game_summary:
         for player, stat in game_summary[team]["players_data"][player_name].items():
@@ -96,11 +120,15 @@ def analyse_nba_game(play_by_play_moves):
 
     return game_summary
     print(game_summary)
-
-    ''' #DATA will be an array of hashes with this format:
-    #DUNE - PART II
+#DUNE - PART II
+def print_nba_game_stats(game_summary):
+    header = "\t".join(["Players", "FG", "FGA", "FG%", "3P", "3PA", "3P%", "FT", "FTA", "FT%", "ORB", "DRB", "TRB", "AST", "STL", "BLK", "TOV", "PF", "PTS"])
+    print(header)
+    
+    '''#DATA will be an array of hashes with this format:
+    
         PLAYER_DATA = {"player_name": XXX, "FG": XXX, "FGA": XXX, "FG%": XXX, "3P": XXX, "3PA": XXX, "3P%": XXX, "FT": XXX, "FTA": XXX, "FT%": XXX, "ORB": XXX, "DRB": XXX, "TRB": XXX, "AST": XXX, "STL": XXX, "BLK": XXX, "TOV": XXX, "PF": XXX, "PTS": XXX}
-        DATA_HEADER = "\t".join(["player_name", "FG", "FGA", "FG%", "3P", "3PA", "3P%", "FT", "FTA", "FT%", "ORB", "DRB", "TRB", "AST", "STL", "BLK", "TOV", "PF", "PTS"])
+        
         #return game_summary
         DATA = DATA_HEADER.append(PLAYER_DATA)'''
 
