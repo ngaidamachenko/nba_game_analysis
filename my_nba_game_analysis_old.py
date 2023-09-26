@@ -30,14 +30,14 @@ def analyse_nba_game(play_by_play_moves):
         "FT": r'(.*) makes free throw',
         "FTA": r'(.*) (makes|misses) free throw',
         #"FT%": #ft/fta,
-        "ORB": r'Offensive rebound by (.*)',
-        "DRB": r'Defensive rebound by (.*)',
-        "TRB": r'(Ofensive|Defensive) rebound by (.*)',
-        "AST": r'assist by (.*)',
-        "STL": r'steal by (.*)',
-        "BLK": r'block by (.*)' ,
-        "TOV": r'Turnover by (.*)',
-        "PF": r'Shooting foul by (.*)',
+        "ORB": r'Offensive rebound by (\b[A-Z]\W\s[A-Z][a-z]+\b)',
+        "DRB": r'Defensive rebound by (\b[A-Z]\W\s[A-Z][a-z]+\b)',
+        "TRB": r'Defensive rebound by (\b[A-Z]\W\s[A-Z][a-z]+\b)' or r'Offensive rebound by (\b[A-Z]\W\s[A-Z][a-z]+\b)',
+        "AST": r'assist by (\b[A-Z]\W\s[A-Z][a-z]+\b)',
+        "STL": r'steal by (\b[A-Z]\W\s[A-Z][a-z]+\b)',
+        "BLK": r'block by (\b[A-Z]\W\s[A-Z][a-z]+\b)' ,
+        "TOV": r'Turnover by (\b[A-Z]\W\s[A-Z][a-z]+\b)',
+        "PF": r'foul by (\b[A-Z]\W\s[A-Z][a-z]+\b)',
        # "PTS": #add 2pts|1pt|3pts,
     }
 
@@ -52,7 +52,7 @@ def analyse_nba_game(play_by_play_moves):
         #AWAY_SCORE = play[5]
         #HOME_SCORE = play[6]
         DESCRIPTION = play[7]
-      #  print(AWAY_TEAM)
+        #print(AWAY_TEAM)
         '''main_player_match = re.search(r'(\b[A-Z]\W\s[A-Z][a-z]+\b)', DESCRIPTION)#((\b[A-Z]\W\s[A-Z][a-z]+\b)\s)|
         if main_player_match:
             main_player = main_player_match[0]
@@ -71,8 +71,8 @@ def analyse_nba_game(play_by_play_moves):
             match = re.search(pattern, DESCRIPTION)
             if match:
                 player_name = match.group(1)#first group match in regex 
-                #print(player_name)
-                if stat not in game_summary[relevant_team]["players_data"][player_name][stat]:
+                print(player_name)
+                '''if stat not in game_summary[relevant_team]["players_data"][player_name][stat]:
                     game_summary[relevant_team]["players_data"][player_name][stat] = 0 #initialize to 0
                 else: 
                     game_summary[relevant_team]["players_data"][player_name][stat] += 1
@@ -103,7 +103,7 @@ def analyse_nba_game(play_by_play_moves):
     return game_summary
     print(game_summary)
         
-    '''    if away_team_bool(AWAY_TEAM, RELEVANT_TEAM):
+        if away_team_bool(AWAY_TEAM, RELEVANT_TEAM):
             game_summary["away team"]["players_data"][player_name]['3P'] += 1
         else:
             game_summary["home team"]["players_data"][player_name]['3P'] += 1
