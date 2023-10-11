@@ -59,16 +59,14 @@ def analyse_nba_game(play_by_play_moves):
         else:
             relevant_team = "home_team"
         
-        player_name = None
+        #player_name = None
         #search for stats in the description using patterns 
         for stat, pattern in player_data_patterns.items(): #items() retrieves stat-value pairs (stat: value)
             match = re.search(pattern, DESCRIPTION)
             if match:
                 player_name = match.group(1)#first group match in regex 
-                print(player_name)
+                #print(player_name)
                 if player_name not in game_summary[relevant_team]["players_data"]:
-                    game_summary[relevant_team]["players_data"][player_name] +
-                else:
                     game_summary[relevant_team]["players_data"][player_name] = {
                     "Players": player_name,
                     "FG": 0,
@@ -90,32 +88,6 @@ def analyse_nba_game(play_by_play_moves):
                     game_summary[relevant_team]["players_data"][player_name][stat] = 0 #initialize to 0
                 else: 
                     game_summary[relevant_team]["players_data"][player_name][stat] += 1
-            '''for stat, pattern in player_data_patterns.items():
-                match = re.search(pattern, DESCRIPTION)
-                if match:
-                    player_name = match.group(1)'''
-                    
-
-        '''if player_name: #exists
-            if player_name not in game_summary[relevant_team]["players_data"]:
-                game_summary[relevant_team]["players_data"][player_name] = {
-                    "Players": player_name,
-                    "FG": 0,
-                    "FGA": 0,
-                    "3P": 0,
-                    "3PA": 0,
-                    "FT": 0,
-                    "FTA": 0,
-                    "ORB": 0,
-                    "DRB": 0,
-                    "TRB": 0,
-                    "AST": 0,
-                    "STL": 0,
-                    "BLK": 0,
-                    "TOV": 0,
-                    "PF": 0,
-                }'''
-            
         #manually calculate % stats and pts
     for team in game_summary:
         for player, stat in game_summary[team]["players_data"][player_name].items():
