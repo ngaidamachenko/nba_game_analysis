@@ -1,8 +1,8 @@
 import csv
 import re
 
-#Issue 1: some actions get attributed to the wrong team, but the right player - tried to resolve by adding exceptions and reversing teams
-#Issue 2: thus players get duplicated on both sides
+#(SOLVED?)Issue 1: some actions get attributed to the wrong team, but the right player - tried to resolve by adding exceptions and reversing teams
+#(SOLVED?)Issue 2: thus players get duplicated on both sides 
 #Issue 3: Steph and Seth Curry merge into one player as both players appear as S. Curry 
 
 
@@ -150,7 +150,7 @@ def analyse_nba_game(play_by_play_moves):
                 FTP = stat["FT"] / stat["FTA"]
                 stat["FT%"] = f"{FTP:.3f}"  # Format as a percentage with 3 decimal places
                 stat["PTS"] = 2 * (stat["FG"] - stat["3P"]) + 3 * stat["3P"] + 1* stat["FT"] #FG - 3P to eliminate duplicate points
-    #print(game_summary["home_team"])
+    #print(game_summary["home_team"]["players_data"]["S. Curry"])
     #print(game_summary)
     return game_summary
 
@@ -193,7 +193,7 @@ def print_nba_game_stats(team_data): #this function works
         ])
         print(line)
 
-        # Calculate team totals and count for averages
+        #count totals occurance to calculate averages
         for key, value in stats.items():
             if key in team_totals:
                 try:
@@ -201,8 +201,7 @@ def print_nba_game_stats(team_data): #this function works
                 except ValueError:
                     team_totals[key] += float(value)
                     total_count[key] += 1
-    
-    # Calculate averages and print totals for the team
+    #calculate averages and print totals for the team
     totals_line = "\t".join([
         "Totals",
         str(team_totals.get("FG", 0)),
@@ -227,15 +226,8 @@ def print_nba_game_stats(team_data): #this function works
     print(totals_line)
 
 def _main():
-    #play_by_play_moves = load_data("nba_game_warriors_thunder_20181016.txt")
     play_by_play_moves = load_data("nba_game_blazers_lakers_20181018.txt")
     game_summary = analyse_nba_game(play_by_play_moves)
-    #home_team = game_summary["home_team"]
-    #away_team = game_summary["away_team"]
     print_nba_game_stats(game_summary["home_team"])
-    
     print_nba_game_stats(game_summary["away_team"])
-    
-    
-    
 _main()
