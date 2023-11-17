@@ -1,6 +1,11 @@
 import csv
 import re
 
+#Issue 1: some actions get attributed to the wrong team, but the right player
+#Issue 2: thus players get duplicated on both sides
+#Issue 3: Steph and Seth Curry merge into one player as both players appear as S. Curry 
+
+
 def load_data(filename):
     result = []
 
