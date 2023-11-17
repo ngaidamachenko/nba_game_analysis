@@ -40,12 +40,13 @@ def analyse_nba_game(play_by_play_moves):
         "TRB": r"(Offensive|Defensive) rebound by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
         "AST": r"assist by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
         #"STL": r"steal by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
-        "BLK": r"block by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
+        #"BLK": r"block by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
         "TOV": r"Turnover by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
         "PF": r"(Defensive|Offensive) foul by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)" #or r"Defensive foul by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
     }
 
     player_data_patterns_exceptions = {#for when CURRENT_TEAM for the player is the opposing team
+        "BLK": r"block by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
         "STL": r"steal by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
         "PF": r"Shooting foul by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
     }
@@ -153,7 +154,7 @@ def analyse_nba_game(play_by_play_moves):
     #print(game_summary)
     return game_summary
 
-def print_nba_game_stats(team_data):
+def print_nba_game_stats(team_data): #this function works
     header = "\t".join([
         "Players", "FG", "FGA", "FG%", "3P", "3PA", "3P%", "FT", "FTA", "FT%", "ORB", "DRB", "TRB",
         "AST", "STL", "BLK", "TOV", "PF", "PTS"
@@ -226,7 +227,8 @@ def print_nba_game_stats(team_data):
     print(totals_line)
 
 def _main():
-    play_by_play_moves = load_data("nba_game_warriors_thunder_20181016.txt")
+    #play_by_play_moves = load_data("nba_game_warriors_thunder_20181016.txt")
+    play_by_play_moves = load_data("nba_game_blazers_lakers_20181018.txt")
     game_summary = analyse_nba_game(play_by_play_moves)
     #home_team = game_summary["home_team"]
     #away_team = game_summary["away_team"]
