@@ -1,12 +1,11 @@
 import csv
 import re
 
-#DUNE - PART I
 def load_data(filename):
     result = []
 
-    with open(filename,'r') as csvfile:
-        csvreader = csv.reader(csvfile, delimiter='|')
+    with open(filename, "r", encoding="utf-8") as csvfile:
+        csvreader = csv.reader(csvfile, delimiter="|")
 
         fields = next(csvreader)
 
@@ -18,140 +17,218 @@ def away_team_bool(AWAY_TEAM, CURRENT_TEAM):
     return AWAY_TEAM == CURRENT_TEAM
 
 def analyse_nba_game(play_by_play_moves):
-    game_summary = {"home_team": {"name": "", "players_data": {}}, "away_team": {"name": "otherteam", "players_data": {}}}
+    game_summary = {
+        "home_team": {"name": "", "players_data": {}},
+        "away_team": {"name": "", "players_data": {}},
+    }
+    #game_summary = {} #initialazing player data dictionaries
     
-    player_data_patterns = {#dictionary to store stats search patterns
-        "FG": r'(.*) makes (2-pt|3-pt) jump shot from',
-        "FGA": r'(.*) (makes|misses) (2-pt|3-pt) jump shot from', #made+attempts?
-        #"FG%": #fg/fga,
-        "3P": r'(.*)makes 3-pt jump shot from',
-        "3PA": r'(.*) (makes|misses) (3-pt) jump shot from',
-        #"3P%": #3p/3pa,
-        "FT": r'(.*) makes free throw',
-        "FTA": r'(.*) (makes|misses) free throw',
-        #"FT%": #ft/fta,
-        "ORB": r'Offensive rebound by (\b[A-Z]\W\s[A-Z][a-z]+\b)',
-        "DRB": r'Defensive rebound by (\b[A-Z]\W\s[A-Z][a-z]+\b)',
-        "TRB": r'Defensive rebound by (\b[A-Z]\W\s[A-Z][a-z]+\b)' or r'Offensive rebound by (\b[A-Z]\W\s[A-Z][a-z]+\b)',
-        "AST": r'assist by (\b[A-Z]\W\s[A-Z][a-z]+\b)',
-        "STL": r'steal by (\b[A-Z]\W\s[A-Z][a-z]+\b)',
-        "BLK": r'block by (\b[A-Z]\W\s[A-Z][a-z]+\b)' ,
-        "TOV": r'Turnover by (\b[A-Z]\W\s[A-Z][a-z]+\b)',
-        "PF": r'foul by (\b[A-Z]\W\s[A-Z][a-z]+\b)',
-       # "PTS": #add 2pts|1pt|3pts,
+    player_data_patterns = {  
+        "FG": r"(.*) makes (2-pt|3-pt)",
+        "FGA": r"(.*) (makes|misses) (2-pt|3-pt)",
+        "3P": r"(.*) makes 3-pt jump shot from",
+        "3PA": r"(.*) (makes|misses) (3-pt) jump shot from",
+        "FT": r"(.*) makes (|clear path )free throw",
+        "FTA": r"(.*) (makes|misses) (|clear path )free throw",
+        "ORB": r"Offensive rebound by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
+        "DRB": r"Defensive rebound by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
+        "TRB": r"(Offensive|Defensive) rebound by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
+        "AST": r"assist by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
+        #"STL": r"steal by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
+        "BLK": r"block by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
+        "TOV": r"Turnover by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
+        "PF": r"(Defensive|Offensive) foul by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)" #or r"Defensive foul by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
+    }
+
+    player_data_patterns_exceptions = {#for when CURRENT_TEAM for the player is the opposing team
+        "STL": r"steal by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
+        "PF": r"Shooting foul by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
     }
 
     for play in play_by_play_moves:
-      # values = play_by_play_moves.split('|')
-        
-        #PERIOD = play[0]
-        #REMAINING_SEC = play[1]
         CURRENT_TEAM = play[2]
         AWAY_TEAM = play[3]
         HOME_TEAM = play[4]
-        #AWAY_SCORE = play[5]
-        #HOME_SCORE = play[6]
         DESCRIPTION = play[7]
-        #print(AWAY_TEAM)'
-        #player_name = None
-        if away_team_bool(AWAY_TEAM, CURRENT_TEAM):
-            relevant_team = "away_team"
-        else:
-            relevant_team = "home_team"
         
-        #player_name = None
-        #search for stats in the description using patterns 
-        for stat, pattern in player_data_patterns.items(): #items() retrieves stat-value pairs (stat: value)
-            match = re.search(pattern, DESCRIPTION)
-            if match:
-                player_name = match.group(1)#first group match in regex 
-                #print(player_name)
+        player_name = ""
+        
+        for stat, pattern in player_data_patterns.items():
+            matches = re.finditer(pattern, DESCRIPTION)                  
+            if away_team_bool(AWAY_TEAM, CURRENT_TEAM):
+                relevant_team = "away_team"
+                game_summary[relevant_team]["name"] = AWAY_TEAM
+            else:
+                relevant_team = "home_team"
+                game_summary[relevant_team]["name"] = HOME_TEAM
+            for match in matches:
+                if stat == "TRB" or stat == "PF":
+                    player_name = match.group(2)
+                else:
+                    player_name = match.group(1) #looks for the first group in regex pattern  
                 if player_name not in game_summary[relevant_team]["players_data"]:
-                    game_summary[relevant_team]["players_data"][player_name] = {
-                    "Players": player_name,
-                    "FG": 0,
-                    "FGA": 0,
-                    "3P": 0,
-                    "3PA": 0,
-                    "FT": 0,
-                    "FTA": 0,
-                    "ORB": 0,
-                    "DRB": 0,
-                    "TRB": 0,
-                    "AST": 0,
-                    "STL": 0,
-                    "BLK": 0,
-                    "TOV": 0,
-                    "PF": 0,
-                }
-                if stat not in game_summary[relevant_team]["players_data"][player_name]:
-                    game_summary[relevant_team]["players_data"][player_name][stat] = 0 #initialize to 0
-                else: 
+                    game_summary[relevant_team]["players_data"][player_name] = { #have to add +1 to the first stat encountered for that player in the same step
+                        "player_name": player_name,
+                        "FG": 0,
+                        "FGA": 0,
+                        "FG%": 0,
+                        "3P": 0,
+                        "3PA": 0,
+                        "3P%": 0,
+                        "FT": 0,
+                        "FTA": 0,
+                        "FT%": 0,
+                        "ORB": 0,
+                        "DRB": 0,
+                        "TRB": 0,
+                        "AST": 0,
+                        "STL": 0,
+                        "BLK": 0,
+                        "TOV": 0,
+                        "PF": 0,
+                        "PTS": 0,
+                    }
+                game_summary[relevant_team]["players_data"][player_name][stat] += 1
+
+        for stat, pattern in player_data_patterns_exceptions.items(): #for outlier patterns
+            match = re.search(pattern, DESCRIPTION)                  
+            if away_team_bool(AWAY_TEAM, CURRENT_TEAM): #reversed
+                relevant_team = "home_team"
+                game_summary[relevant_team]["name"] = HOME_TEAM
+            else:
+                relevant_team = "away_team"
+                game_summary[relevant_team]["name"] = AWAY_TEAM
+            if match:
+                player_name = match.group(1)  
+                if player_name not in game_summary[relevant_team]["players_data"]:
+                    game_summary[relevant_team]["players_data"][player_name] = {  #have to add +1 to the first stat encountered for that player in the same step
+                        "player_name": player_name,
+                        "FG": 0,
+                        "FGA": 0,
+                        "FG%": 0,
+                        "3P": 0,
+                        "3PA": 0,
+                        "3P%": 0,
+                        "FT": 0,
+                        "FTA": 0,
+                        "FT%": 0,
+                        "ORB": 0,
+                        "DRB": 0,
+                        "TRB": 0,
+                        "AST": 0,
+                        "STL": 0,
+                        "BLK": 0,
+                        "TOV": 0,
+                        "PF": 0,
+                        "PTS": 0,
+                    }
+                else:
                     game_summary[relevant_team]["players_data"][player_name][stat] += 1
-        #manually calculate % stats and pts
-    for team in game_summary:
-        for player, stat in game_summary[team]["players_data"][player_name].items():
-            FG = stat["FG"]
-            FGA = stat["FGA"]
-            FGP = FG/FGA
-            print(FGP)
-            stat["FG%"] = FGP
+    for relevant_team in game_summary:
+        for player_name, stat in game_summary[relevant_team]["players_data"].items():
+            #FG = stat["FG"]
+            #FGA = stat["FGA"]
+            if stat["FGA"] > 0:
+                FGP = stat["FG"] / stat["FGA"]
+                stat["FG%"] = f"{FGP:.3f}"  # Format as a percentage with 3 decimal places
 
-            three_pts_made = stat["3P"]
-            three_pts_attempts = stat["3PA"] 
-            three_pts_percentage = three_pts_made/three_pts_attempts
-            print(three_pts_percentage) 
-            stat["3P%"] = three_pts_percentage 
+            #three_pts_made = stat["3P"]
+            #three_pts_attempts = stat["3PA"]
+            if stat["3PA"] > 0:
+                three_pts_percentage = stat["3P"] / stat["3PA"]
+                stat["3P%"] = f"{three_pts_percentage:.3f}"  # Format as a percentage with 3 decimal places
 
-            FT = stat["FT"]
-            FTA = stat["FTA"]
-            FTP = FT/FTA
-            print(FTP)
-            stat["FTP"] = FTP
-
-            PTS = 2*FG + 3*three_pts_made + FT
-            print(PTS)
-
+            #FT = stat["FT"]
+            #FTA = stat["FTA"]
+            if stat["FTA"] > 0:
+                FTP = stat["FT"] / stat["FTA"]
+                stat["FT%"] = f"{FTP:.3f}"  # Format as a percentage with 3 decimal places
+                stat["PTS"] = 2 * (stat["FG"] - stat["3P"]) + 3 * stat["3P"] + 1* stat["FT"] #FG - 3P to eliminate duplicate points
+    #print(game_summary["home_team"])
+    #print(game_summary)
     return game_summary
-    print(game_summary)
-#DUNE - PART II
-def print_nba_game_stats(game_summary):
-    header = "\t".join(["Players", "FG", "FGA", "FG%", "3P", "3PA", "3P%", "FT", "FTA", "FT%", "ORB", "DRB", "TRB", "AST", "STL", "BLK", "TOV", "PF", "PTS"])
+
+def print_nba_game_stats(team_data):
+    header = "\t".join([
+        "Players", "FG", "FGA", "FG%", "3P", "3PA", "3P%", "FT", "FTA", "FT%", "ORB", "DRB", "TRB",
+        "AST", "STL", "BLK", "TOV", "PF", "PTS"
+    ])
     print(header)
+
+    team_totals = {
+        "FG": 0, "FGA": 0, "FG%": 0, "3P": 0, "3PA": 0, "3P%": 0, "FT": 0, "FTA": 0,
+        "FT%": 0, "ORB": 0, "DRB": 0, "TRB": 0, "AST": 0, "STL": 0, "BLK": 0,
+        "TOV": 0, "PF": 0, "PTS": 0
+    }
     
-    '''#DATA will be an array of hashes with this format:
+    total_count = {"FG%": 0, "3P%": 0, "FT%": 0}
+
+    for player, stats in team_data["players_data"].items():
+        line = "\t".join([
+            player,
+            str(stats.get("FG", 0)),
+            str(stats.get("FGA", 0)),
+            str(stats.get("FG%", 0)),
+            str(stats.get("3P", 0)),
+            str(stats.get("3PA", 0)),
+            str(stats.get("3P%", 0)),
+            str(stats.get("FT", 0)),
+            str(stats.get("FTA", 0)),
+            str(stats.get("FT%", 0)),
+            str(stats.get("ORB", 0)),
+            str(stats.get("DRB", 0)),
+            str(stats.get("TRB", 0)),
+            str(stats.get("AST", 0)),
+            str(stats.get("STL", 0)),
+            str(stats.get("BLK", 0)),
+            str(stats.get("TOV", 0)),
+            str(stats.get("PF", 0)),
+            str(stats.get("PTS", 0))
+        ])
+        print(line)
+
+        # Calculate team totals and count for averages
+        for key, value in stats.items():
+            if key in team_totals:
+                try:
+                    team_totals[key] += int(value)
+                except ValueError:
+                    team_totals[key] += float(value)
+                    total_count[key] += 1
     
-        PLAYER_DATA = {"player_name": XXX, "FG": XXX, "FGA": XXX, "FG%": XXX, "3P": XXX, "3PA": XXX, "3P%": XXX, "FT": XXX, "FTA": XXX, "FT%": XXX, "ORB": XXX, "DRB": XXX, "TRB": XXX, "AST": XXX, "STL": XXX, "BLK": XXX, "TOV": XXX, "PF": XXX, "PTS": XXX}
-        
-        #return game_summary
-        DATA = DATA_HEADER.append(PLAYER_DATA)'''
+    # Calculate averages and print totals for the team
+    totals_line = "\t".join([
+        "Totals",
+        str(team_totals.get("FG", 0)),
+        str(team_totals.get("FGA", 0)),
+        str(round(team_totals.get("FG%", 0) / total_count["FG%"], 3) if total_count["FG%"] > 0 else 0),
+        str(team_totals.get("3P", 0)),
+        str(team_totals.get("3PA", 0)),
+        str(round(team_totals.get("3P%", 0) / total_count["3P%"], 3) if total_count["3P%"] > 0 else 0),
+        str(team_totals.get("FT", 0)),
+        str(team_totals.get("FTA", 0)),
+        str(round(team_totals.get("FT%", 0) / total_count["FT%"], 3) if total_count["FT%"] > 0 else 0),
+        str(team_totals.get("ORB", 0)),
+        str(team_totals.get("DRB", 0)),
+        str(team_totals.get("TRB", 0)),
+        str(team_totals.get("AST", 0)),
+        str(team_totals.get("STL", 0)),
+        str(team_totals.get("BLK", 0)),
+        str(team_totals.get("TOV", 0)),
+        str(team_totals.get("PF", 0)),
+        str(team_totals.get("PTS", 0)),
+    ])
+    print(totals_line)
 
 def _main():
-    play_by_play_moves = load_data("nba_game_blazers_lakers_20181018.txt")
-    analyse_nba_game(play_by_play_moves)
-
+    play_by_play_moves = load_data("nba_game_warriors_thunder_20181016.txt")
+    game_summary = analyse_nba_game(play_by_play_moves)
+    #home_team = game_summary["home_team"]
+    #away_team = game_summary["away_team"]
+    print_nba_game_stats(game_summary["home_team"])
+    
+    print_nba_game_stats(game_summary["away_team"])
+    
+    
+    
 _main()
-
-
-#ABBREVIATIONS
-"""
-
-    FG: Field Goals Made
-    FGA: Field Goal Attempts
-    FG%: Field Goal Percentage
-    3P: Three-Pointers Made
-    3PA: Three-Point Attempts
-    3P%: Three-Point Percentage
-    FT: Free Throws Made
-    FTA: Free Throw Attempts
-    FT%: Free Throw Percentage
-    ORB: Offensive Rebounds
-    DRB: Defensive Rebounds
-    TRB: Total Rebounds
-    AST: Assists
-    STL: Steals
-    BLK: Blocks
-    TOV: Turnovers
-    PF: Personal Fouls
-    PTS: Points
-"""
