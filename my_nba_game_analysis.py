@@ -1,11 +1,6 @@
 import csv
 import re
 
-#(SOLVED?)Issue 1: some actions get attributed to the wrong team, but the right player - tried to resolve by adding exceptions and reversing teams
-#(SOLVED?)Issue 2: thus players get duplicated on both sides 
-#Issue 3: Steph and Seth Curry merge into one player as both players appear as S. Curry 
-
-
 def load_data(filename):
     result = []
 
@@ -26,7 +21,6 @@ def analyse_nba_game(play_by_play_moves):
         "home_team": {"name": "", "players_data": {}},
         "away_team": {"name": "", "players_data": {}},
     }
-    #game_summary = {} #initialazing player data dictionaries
     
     player_data_patterns = {  
         "FG": r"(.*) makes (2-pt|3-pt)",
@@ -39,8 +33,6 @@ def analyse_nba_game(play_by_play_moves):
         "DRB": r"Defensive rebound by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
         "TRB": r"(Offensive|Defensive) rebound by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
         "AST": r"assist by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
-        #"STL": r"steal by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
-        #"BLK": r"block by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
         "TOV": r"Turnover by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
         "PF": r"(Defensive|Offensive) foul by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)" #or r"Defensive foul by (\b[A-Z]\W\s[A-Z][a-z]+(?:-[A-Z][a-z]+)?\b)",
     }
@@ -132,29 +124,22 @@ def analyse_nba_game(play_by_play_moves):
                     game_summary[relevant_team]["players_data"][player_name][stat] += 1
     for relevant_team in game_summary:
         for player_name, stat in game_summary[relevant_team]["players_data"].items():
-            #FG = stat["FG"]
-            #FGA = stat["FGA"]
             if stat["FGA"] > 0:
                 FGP = stat["FG"] / stat["FGA"]
                 stat["FG%"] = f"{FGP:.3f}"  # Format as a percentage with 3 decimal places
 
-            #three_pts_made = stat["3P"]
-            #three_pts_attempts = stat["3PA"]
             if stat["3PA"] > 0:
                 three_pts_percentage = stat["3P"] / stat["3PA"]
-                stat["3P%"] = f"{three_pts_percentage:.3f}"  # Format as a percentage with 3 decimal places
+                stat["3P%"] = f"{three_pts_percentage:.3f}"  #Format as a percentage with 3 decimal places
 
-            #FT = stat["FT"]
-            #FTA = stat["FTA"]
             if stat["FTA"] > 0:
                 FTP = stat["FT"] / stat["FTA"]
-                stat["FT%"] = f"{FTP:.3f}"  # Format as a percentage with 3 decimal places
+                stat["FT%"] = f"{FTP:.3f}"  #Format as a percentage with 3 decimal places
                 stat["PTS"] = 2 * (stat["FG"] - stat["3P"]) + 3 * stat["3P"] + 1* stat["FT"] #FG - 3P to eliminate duplicate points
-    #print(game_summary["home_team"]["players_data"]["S. Curry"])
     #print(game_summary)
     return game_summary
 
-def print_nba_game_stats(team_data): #this function works
+def print_nba_game_stats(team_data): 
     header = "\t".join([
         "Players", "FG", "FGA", "FG%", "3P", "3PA", "3P%", "FT", "FTA", "FT%", "ORB", "DRB", "TRB",
         "AST", "STL", "BLK", "TOV", "PF", "PTS"
@@ -193,7 +178,7 @@ def print_nba_game_stats(team_data): #this function works
         ])
         print(line)
 
-        #count totals occurance to calculate averages
+        #calculate team totals and count for averages
         for key, value in stats.items():
             if key in team_totals:
                 try:
@@ -230,4 +215,7 @@ def _main():
     game_summary = analyse_nba_game(play_by_play_moves)
     print_nba_game_stats(game_summary["home_team"])
     print_nba_game_stats(game_summary["away_team"])
+    
+    
+    
 _main()
